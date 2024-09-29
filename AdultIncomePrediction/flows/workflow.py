@@ -1,22 +1,18 @@
-# To run the file in terminal type > python workflow.py 
-# Has to connect with Prefect cloud -> https://app.prefect.cloud/
-# Prefect Login [Prefect Cloud] - https://www.prefect.io/opensource  -> get started
-
 # Step 1: Import Required Libraries
 import pandas as pd
 from prefect import flow, task
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
 # Step 2: Load the Dataset
 @task
 def load_dataset():
     # Load the dataset from a direct link
-    url = "https://drive.google.com/uc?id=1ZJiFga_p8JHvC-dIuUHM3706bp0k22b1"
-    column_names = ['age', 'workclass', 'fnlwgt', 'education', 'educational-num', 
-                    'marital-status', 'occupation', 'relationship', 'race', 'gender', 
-                    'capital-gain', 'capital-loss', 'hours-per-week', 'native-country', 'income']
+    url = "https://raw.githubusercontent.com/praveenjanand/DSMLAssignment/refs/heads/main/AdultIncomePrediction/data/adult.csv"
     try:
-        df = pd.read_csv(url, names=column_names)
+        df = pd.read_csv(url)
         print("Dataset loaded successfully.")
         return df
     except Exception as e:
@@ -31,10 +27,21 @@ def preprocess_data(df):
     print("Columns with missing values: ")
     print(columns_with_missing)
 
-    # Replace missing values with the median value
-    df.fillna(df.median(), inplace=True)
+    # Replace missing values in numeric columns with the median
+    df.fillna(df.select_dtypes(include=['number']).median(), inplace=True)
 
-    # Normalize using Min-Max Scaling
+    # Replace missing values in non-numeric (categorical) columns with the most frequent value (mode)
+    df.fillna(df.select_dtypes(exclude=['number']).mode().iloc[0], inplace=True)
+
+    # Encode categorical columns (excluding 'income')
+    categorical_columns = df.select_dtypes(exclude=['number']).columns.drop('income')
+    df = pd.get_dummies(df, columns=categorical_columns)
+
+    # Encode 'income' as binary (0 or 1)
+    label_encoder = LabelEncoder()
+    df['income'] = label_encoder.fit_transform(df['income'])
+
+    # Normalize using Min-Max Scaling for numeric columns
     scaler = MinMaxScaler()
     features = df.drop('income', axis=1)  # Use 'income' as the target variable
     df_normalized = pd.DataFrame(scaler.fit_transform(features), columns=features.columns)
@@ -50,10 +57,6 @@ def preprocess_data(df):
 @task
 def train_model(df):
     # Train your machine learning model with Logistic Regression
-    from sklearn.model_selection import train_test_split
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.metrics import accuracy_score
-
     X = df.drop('income', axis=1)  # Use 'income' as the target variable
     y = df['income']
 
