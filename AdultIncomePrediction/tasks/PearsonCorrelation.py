@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from scipy.stats import pearsonr
 import logging
@@ -9,37 +10,58 @@ import base64
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Import the data
-df = pd.read_csv("../data/adult.csv")
+def load_dataset():
+    # Load the dataset from a direct link
+    url = "https://raw.githubusercontent.com/praveenjanand/DSMLAssignment/refs/heads/main/AdultIncomePrediction/data/adult.csv"
+    column_names = ['age', 'workclass', 'fnlwgt', 'education', 'educational-num', 
+                    'marital-status', 'occupation', 'relationship', 'race', 'gender', 
+                    'capital-gain', 'capital-loss', 'hours-per-week', 'native-country', 'income']
+    try:
+        df = pd.read_csv(url, names=column_names)
+        logger.info("Dataset loaded successfully.")
+        return df
+    except Exception as e:
+        logger.error(f"Error loading dataset: {e}")
+
+# Load the dataset
+df = load_dataset()
 logger.info("Dataset loaded for Pearson correlation.")
 
+# Ensure 'age' and 'hours-per-week' columns are numeric
+df['age'] = pd.to_numeric(df['age'], errors='coerce')
+df['hours-per-week'] = pd.to_numeric(df['hours-per-week'], errors='coerce')
+
+# Drop rows with NaN values in either column
+df.dropna(subset=['age', 'hours-per-week'], inplace=True)
+
 # Convert columns to series
-list1 = df['Age']
-list2 = df['DaysOfStay']
+list1 = df['age']
+list2 = df['hours-per-week']
 
 # Compute Pearson correlation
 corr, _ = pearsonr(list1, list2)
-logger.info(f'Pearson correlation: {corr:.3f}')
+logger.info(f'Pearson correlation between Age and Hours-per-week: {corr:.3f}')
 
 # Scatter plot
 plt.scatter(list1, list2)
 plt.xlabel('Age')
-plt.ylabel('Days of Stay')
-plt.title('Scatter plot of Age vs Days of Stay')
+plt.ylabel('Hours-per-week')
+plt.title('Scatter plot of Age vs Hours-per-week')
 
-# Save the plot to a buffer
+# Ensure the output directory exists
+output_dir = "../output"
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+    logger.info(f"Directory {output_dir} created.")
+
+# Save the plot as a file
+plt.savefig(os.path.join(output_dir, "scatter_plot.png"))
+logger.info("Scatter plot saved as 'scatter_plot.png'")
+
+# Save the plot to a buffer (optional if you need base64 image)
 buf = io.BytesIO()
 plt.savefig(buf, format='png')
 buf.seek(0)
-
-# Encode the image in base64 and log it
-img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-#logger.info("Scatter plot image (base64 encoded):")
-#logger.info(f"data:image/png;base64,{img_base64}")
-
-# Save the plot as a file
-plt.savefig("../output/scatter_plot.png")
-logger.info("Scatter plot saved as 'scatter_plot.png'")
 
 # Close the buffer
 buf.close()

@@ -37,7 +37,7 @@ def main_flow():
 
 # To run locally
 if __name__ == "__main__":
-    main_flow.serve(name="covid-ds-workflow",
-                      tags=["covid datascience project workflow"],
+    main_flow.serve(name="income-predict-ds-workflow",
+                      tags=["adult income prediction datascience project workflow"],
                       parameters={},
                       interval=60)
