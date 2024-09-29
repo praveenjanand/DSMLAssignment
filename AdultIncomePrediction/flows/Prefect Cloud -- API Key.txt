@@ -1,0 +1,16 @@
+1. PREFECT API KEY 
+
+set PREFECT_API_KEY=pnu_M6BY8iNMSIdRgRrO0jWdit0hHcYNuP2dzRLW
+prefect cloud login --key pnu_M6BY8iNMSIdRgRrO0jWdit0hHcYNuP2dzRLW
+
+2. run this command to save the key to your active profile
+prefect cloud login -k pnu_M6BY8iNMSIdRgRrO0jWdit0hHcYNuP2dzRLW
+prefect cloud login --key YOUR_API_KEY --workspace YOUR_WORKSPACE
+
+prefect cloud login -k cli-dfe7c21d-c2f2-4d61-a01d-be4de2f5f0b2
+
+3. Prefect Account Id -> 8ff8f613-92c4-44ce-b811-f9956023e78d
+
+4. Workspace Id -> 04d8fca9-df2e-40c8-ae4f-a3733114c475
+
+5. Command to set workspace Id -> prefect cloud workspace set --workspace "shreyas-rao/default" 
