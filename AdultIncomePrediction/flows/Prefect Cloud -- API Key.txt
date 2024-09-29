@@ -9,8 +9,6 @@ prefect cloud login --key YOUR_API_KEY --workspace YOUR_WORKSPACE
 
 prefect cloud login -k cli-dfe7c21d-c2f2-4d61-a01d-be4de2f5f0b2
 
-3. Prefect Account Id -> 8ff8f613-92c4-44ce-b811-f9956023e78d
+3. Prefect Account Id -> 35053e5f-52e7-416d-a906-a047d8b21ca4
 
-4. Workspace Id -> 04d8fca9-df2e-40c8-ae4f-a3733114c475
-
-5. Command to set workspace Id -> prefect cloud workspace set --workspace "shreyas-rao/default" 
+4. Workspace Id -> 08ea6e5a-ab13-4741-8f1a-e5c1dcffed3a
