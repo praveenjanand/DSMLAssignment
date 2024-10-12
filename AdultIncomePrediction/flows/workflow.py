@@ -5,6 +5,8 @@ from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
+import numpy as np
+
 
 # Step 2: Load the Dataset
 @task
@@ -21,25 +23,51 @@ def load_dataset():
 # Step 3: Data Preprocessing
 @task(log_prints=True)
 def preprocess_data(df):
-    # Print columns with missing values and their count
-    missing_values = df.isna().sum()
-    columns_with_missing = missing_values[missing_values > 0]
-    print("Columns with missing values: ")
-    print(columns_with_missing)
+    """Preprocesses the data for machine learning."""
+
+    # Convert relevant columns to string if necessary
+    categorical_columns = ['workclass', 'occupation', 'native-country']
+    df[categorical_columns] = df[categorical_columns].astype(str)
+
+    # Replace '?' and np.str_('nan') with actual NaN
+    df.replace(['?', np.str_('nan')], np.nan, inplace=True)
+
+    # Print unique values for debugging
+    for column in categorical_columns:
+        print(f"Unique values in {column}: {df[column].unique()}")
+
+    # Print initial missing values
+    print("Initial missing values: ")
+    print(df.isna().sum())
 
     # Replace missing values in numeric columns with the median
-    df.fillna(df.select_dtypes(include=['number']).median(), inplace=True)
+    numeric_columns = df.select_dtypes(include=['number'])
+    df.fillna(numeric_columns.median(), inplace=True)
 
-    # Replace missing values in non-numeric (categorical) columns with the most frequent value (mode)
-    df.fillna(df.select_dtypes(exclude=['number']).mode().iloc[0], inplace=True)
+    # Replace missing values in categorical columns with the mode
+    for column in categorical_columns:
+        df[column].fillna(df[column].mode()[0], inplace=True)
+
+    # Print missing values after replacements
+    print("Missing values after replacement: ")
+    print(df.isna().sum())
 
     # Encode categorical columns (excluding 'income')
-    categorical_columns = df.select_dtypes(exclude=['number']).columns.drop('income')
+    categorical_columns = df.select_dtypes(exclude=['number']).columns.drop('income', errors='ignore')
+    
+    # One-hot encoding
+    print(f"One-hot encoding the following categorical columns: {categorical_columns.tolist()}")
     df = pd.get_dummies(df, columns=categorical_columns)
+    
+    # Print shape after one-hot encoding
+    print(f"DataFrame shape after one-hot encoding: {df.shape}")
 
     # Encode 'income' as binary (0 or 1)
     label_encoder = LabelEncoder()
     df['income'] = label_encoder.fit_transform(df['income'])
+    
+    # Print unique values of the encoded target variable
+    print(f"Unique values in 'income' after label encoding: {df['income'].unique()}")
 
     # Normalize using Min-Max Scaling for numeric columns
     scaler = MinMaxScaler()
@@ -52,6 +80,8 @@ def preprocess_data(df):
     print(df_normalized.head())  # Printing only the first few rows for brevity
 
     return df_normalized
+
+
 
 # Step 4: Model Training
 @task
