@@ -6,7 +6,7 @@ ACCOUNT_ID = "f5fe7ddd-15ca-439f-a5fb-304dbbfc4064"  # Your Prefect Cloud Accoun
 WORKSPACE_ID = "7f1bb8d2-0a07-4f1e-abe2-3c271406bb43"  # Your Prefect Cloud Workspace ID
 
 # Correct API URL to list flow runs
-PREFECT_API_URL = f"https://api.prefect.cloud/api/accounts/{ACCOUNT_ID}/workspaces/{WORKSPACE_ID}/artifacts/filter"
+PREFECT_API_URL = f"https://api.prefect.cloud/api/accounts/{ACCOUNT_ID}/workspaces/{WORKSPACE_ID}/health"
 
 # Data to filter artifacts
 data = {
@@ -22,16 +22,13 @@ data = {
 # Set up headers with Authorization
 headers = {"Authorization": f"Bearer {PREFECT_API_KEY}"}
 
-# Make the request
-response = requests.post(PREFECT_API_URL, headers=headers, json=data)
-print(response)
+# Make the request using GET
+response = requests.get(PREFECT_API_URL, headers=headers)
 
 # Check the response status
-if response.status_code != 200:
+if response.status_code == 200:
+    deployment_info = response.json()
+    print(deployment_info)
+else:
     print(f"Error: Received status code {response.status_code}")
     print(f"Response content: {response.text}")
-else:
-    artifacts = response.json()
-    print(artifacts)
-    for artifact in artifacts:
-        print(artifact)
